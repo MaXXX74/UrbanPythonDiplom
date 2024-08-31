@@ -50,7 +50,7 @@
             <div class="shots">
                 {% for shot in shots %}
                 <div class="single_shot">
-                    <img src="/static/image/shots.small/{{ shot.file }}" onclick="openImagePopup('/static/image/shots/{{ shot.file }}')">
+                    <img src="/static/image/shots.small/{{ shot.file }}" onclick="openImagePopup('{{ shot.url }}')">
                 </div>
                 {% endfor %}
             </div>

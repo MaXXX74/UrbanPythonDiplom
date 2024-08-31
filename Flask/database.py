@@ -165,7 +165,7 @@ class DBase:
         return self.__cursor.fetchone()
 
     def get_shots_by_id(self, id):
-        sql = "SELECT file FROM shots WHERE movie_id = ?"
+        sql = "SELECT file, url FROM shots WHERE movie_id = ?"
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchall()
 
@@ -185,3 +185,4 @@ if __name__ == "__main__":
     # ]
     # for movie in movies:
     #     db.add_movie(movie)
+
