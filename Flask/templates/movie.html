@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}"{{ movie.name }}" ({{ movie.year }}){% endblock %}
+
+{% block content %}
+    <div id="main_content">
+        <div class="movie">
+            <div class="inner_movie">
+                <div class="movie_left_side">
+                    <img src="/static/image/{{ movie.poster }}" alt="">
+                    {% if movie.rating_kinopoisk %}
+                        <div class="raiting_caption">IMDb / Кинопоиск</div>
+                    {% else %}
+                    <div class="raiting_caption">IMDb</div>
+                    {% endif %}
+                    <div class="raiting_value">
+                        {% if movie.rating_imdb %}
+                            {% if movie.rating_imdb < 5 %}
+                                <div class="red">{{ movie.rating_imdb }}</div>
+                            {% elif movie.rating_imdb < 7 %}
+                                <div class="yellow">{{ movie.rating_imdb }}</div>
+                            {% else %}
+                                <div class="green">{{ movie.rating_imdb }}</div>
+                            {% endif %}
+                        {% endif %}    
+                        {% if movie.rating_kinopoisk %}
+                            &nbsp;/&nbsp;
+                            {% if movie.rating_kinopoisk < 5 %}
+                                <div class="red">{{ movie.rating_kinopoisk }}</div>
+                            {% elif movie.rating_kinopoisk < 7 %}
+                                <div class="yellow">{{ movie.rating_kinopoisk }}</div>
+                            {% else %}
+                                <div class="green">{{ movie.rating_kinopoisk }}</div>
+                            {% endif %}    
+                        {% endif %}    
+                    </div>
+                </div>
+                <div class="movie_right_side">
+                    <div class="p1"><b>Название: </b>{{ movie.name }}</div>
+                    <div class="p1"><b>Оригинальное название: </b>{{ movie.ori_name }}</div>
+                    <div class="p1"><b>Год выпуска: </b>{{ movie.year }}</div>
+                    <div class="p1"><b>Жанр: </b>{{ movie.genre }}</div>
+                    <div class="p1"><b>Выпущено: </b>{{ movie.creators }}</div>
+                    <div class="p1"><b>Режиссер: </b>{{ movie.director }}</div>
+                    <div class="p1"><b>В ролях: </b>{{ movie.actors }}</div>
+                    <hr width="100%">
+                    <div class="p1"><b>О фильме: </b>{{ movie.description }}</div>
+                </div>
+            </div>
+            <div class="shots">
+                {% for shot in shots %}
+                <div class="single_shot">
+                    <img src="/static/image/shots.small/{{ shot.file }}" onclick="openImagePopup('/static/image/shots/{{ shot.file }}')">
+                </div>
+                {% endfor %}
+            </div>
+            <div id="image-popup" class="popup">
+                <span class="close_popup" onclick="closeImagePopup()">&times;</span>
+                <img class="popup-content" id="popup-image">
+            </div>
+            <script src="/static/js/popup_image.js"></script>    
+        </div>&nbsp;
+    </div>
+{% endblock %}
