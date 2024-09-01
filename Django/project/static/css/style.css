@@ -1,0 +1,252 @@
+body {
+    background-image: url(/static/image/bg.jpg);
+    background-attachment: fixed;
+}
+
+/* Навигационное меню */
+#nav_menu {
+    display: flex;
+    position: fixed;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #222;
+    color: white;
+    padding: 10px 0;
+    width: 99%;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+#nav_menu a {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+    padding: 5px 20px;
+    background-color: #444;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+#nav_menu a:hover {
+    background-color: #555;
+    color: gold;
+}
+
+/* Основное содержимое */
+#main_content {
+    max-width: 1000px;
+    max-height: 1320px;
+    margin: 0 auto;
+    padding-top: 55px;
+    padding-bottom: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+#main_content .nodata {
+    color:gold;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    text-align: center;
+}    
+
+/* Контейнер для карточек */
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.cards a {
+    text-decoration: none;
+}
+
+/* Карточки фильмов */
+.movie_card {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    border: 1px solid gray;
+    margin: 10px;
+    background-color: azure;
+    border-radius: 5px;
+    max-width: 200px; /* Ограничиваем ширину карточки */
+    box-sizing: border-box;
+    flex: 1 1 calc(25% - 20px); /* Карточка займет до 25% ширины контейнера, учитывая отступы */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.movie_card img {
+    max-width: 100%; /* Убедимся, что изображение не превышает размер карточки */
+    width: 200px;
+    height: 283px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.movie_card p {
+    word-wrap: break-word;
+    white-space: normal;
+    padding: 10px;
+    margin: 0;
+    text-align: center; /* Центрируем текст внутри карточки */
+    flex: 1;
+}
+
+/* ----------------------------------------- */
+
+/* Подробное описание фильма */
+.movie {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.inner_movie {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content:flex-start;
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.movie_left_side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    background-color: #222;
+    border: 1px solid gray;
+    margin-left: 10px;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.raiting_caption {
+    margin-top: 10px;
+    font-size: 14px;
+    /* font-weight:bolder; */
+    color:azure;
+}
+
+.raiting_value {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight:bolder;
+    color:azure;
+}
+
+.red {
+    color:red;
+}
+
+.yellow {
+    color:yellow;
+}
+
+.green {
+    color: green;
+}
+
+.movie_right_side {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    border: 1px solid gray;
+    margin-left: 10px;
+    padding-top: 10px;
+    padding-left: 15px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    background-color: azure;
+    border-radius: 5px;
+    box-sizing: border-box;
+    flex: 1 1 calc(25% - 20px); /* Описание займет до 25% ширины контейнера, учитывая отступы */
+}
+
+.p1 {
+    margin-top: 0px;
+    color: #292b39;
+    line-height: 21px;
+    font-size: 17px;
+}
+
+.movie_right_side hr {
+    border-color: lightgrey;
+}
+
+/* ----------------------------------------- */
+.line_pages {
+    display: flex;
+    justify-content: space-between;
+    list-style-type: none;
+    padding-bottom: 0px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+ 
+.line_pages a {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+}
+
+.line_pages a:hover {
+    color: gold;
+}
+
+.previous_page {
+    margin-right: auto;
+}
+
+.next_page {
+    margin-left: auto;
+}
+
+/* ----------------------------------------- */
+.shots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    padding: 0px;
+}
+
+.single_shot {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    max-width: 220px; 
+}
+
+.single_shot:hover {
+    transform: scale(1.03);    
+    transition: transform 0.3s ease-in-out;
+}
+
+.single_shot img {
+    cursor: pointer;
+    max-width: 100%;
+    margin-bottom: 10px;
+}

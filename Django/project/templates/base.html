@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/find.css">
+    <link rel="stylesheet" href="/static/css/popup_image.css">
+    <title>{% block title %} {% endblock %}</title>
+</head>
+<body>
+    <div id="nav_menu">
+        {% for menu_item in menu %}
+            <div class="menu_item">
+                {% if menu_item.id %}
+                    <a href="{{ menu_item.link }}" id="{{ menu_item.id }}">{{ menu_item.label }}</a>
+                {% else %}
+                    <a href="{{ menu_item.link }}">{{ menu_item.label }}</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+    {#% extends "find.html" %#}
+</body>
+</html>

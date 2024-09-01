@@ -1,0 +1,56 @@
+<!-- Модальное окно -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Поиск:</h2>
+            <form id="search_form" action='/search/' method='GET' autocomplete="off">
+                <div class="form-group">
+                    <label for="rating_imdb">Рейтинг IMDb от:</label>
+                    <input type="text" id="rating_imdb" name="rating_imdb">
+                </div>
+                <div class="form-group">
+                    <label for="rating_kinopoisk">Рейтинг Кинопоиска от:</label>
+                    <input type="text" id="rating_kinopoisk" name="rating_kinopoisk">
+                </div>
+                <div class="form-group">
+                    <label for="name">Название:</label>
+                    <input type="text" id="name" name="name">
+                </div>
+                <div class="form-group">
+                    <label for="ori_name">Оригинальное название:</label>
+                    <input type="text" id="ori_name" name="ori_name">
+                </div>
+                <div class="form-group">
+                    <label for="year">Год выпуска:</label>
+                    <input type="text" id="year" name="year">
+                </div>
+                <div class="form-group">
+                    <label for="genre">Жанр:</label>
+                    <input type="text" id="genre" name="genre">
+                </div>
+                <div class="form-group">
+                    <label for="genre">Выпущено:</label>
+                    <input type="text" id="creators" name="creators">
+                </div>
+                <div class="form-group">
+                    <label for="director">Режиссер:</label>
+                    <input type="text" id="director" name="director">
+                </div>
+                <div class="form-group">
+                    <label for="actors">В ролях:</label>
+                    <input type="text" id="actors" name="actors">
+                </div>
+                <div class="form-group">
+                    <label for="actors">О фильме:</label>
+                    <input type="text" id="description" name="description">
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" id="submit_button" disabled>Найти</button>
+                    <button type="button" id="clear_button">Очистить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- Скрипт для открытия и закрытия модального окна -->
+<script src="js/script.js"></script>
