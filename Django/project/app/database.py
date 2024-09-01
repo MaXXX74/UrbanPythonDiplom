@@ -51,59 +51,11 @@ def get_and_in_field(key, value):
     return f"({result})"
 
 
-
 class DBase:
     def __init__(self):
         self.__conn = sqlite3.connect("movies.db")
         self.__cursor = sqlite3.Cursor(self.__conn)
         self.__cursor.row_factory = sqlite3.Row
-
-    def delete_tables(self):
-        # удаляем таблицы в БД если они есть
-        sql = """DROP TABLE IF EXISTS app_movies;
-                 DROP TABLE IF EXISTS app_shots;
-              """
-        self.__cursor.executescript(sql)
-
-    def create_tables(self):
-        sql = """CREATE TABLE app_movies(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            ori_name TEXT NOT NULL,
-            year INTEGER NOT NULL,
-            poster TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            creators TEXT NOT NULL,
-            director TEXT NOT NULL,
-            actors TEXT NOT NULL,
-            description TEXT NOT NULL,
-            rating_imdb REAL,
-            rating_kinopoisk REAL
-        );
-        """
-        self.__cursor.execute(sql)
-
-    def add_movie(self, movie):
-        if movie:
-            sql = """INSERT INTO app_movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-            self.__cursor.execute(sql, (
-                movie["name"],
-                movie["ori_name"],
-                movie["year"],
-                movie["poster"],
-                movie["genre"],
-                movie["creators"],
-                movie["director"],
-                movie["actors"],
-                movie["description"],
-                movie["rating_imdb"],
-                movie["rating_kinopoisk"]
-            )
-                                  )
-            self.__conn.commit()
-        else:
-            print("Ошибка добавления фильма в БД")
 
     def get_movies_for_index_page(self, page=1, args=None):
         CARDS_ON_PAGE = 8  # число карточек на одной странице
@@ -160,31 +112,3 @@ class DBase:
             pages["next"] = page + 1
 
         return result, pages
-
-    def get_movie_by_id(self, id):
-        sql = "SELECT * FROM app_movies WHERE id = ?"
-        self.__cursor.execute(sql, (id,))
-        return self.__cursor.fetchone()
-
-    def get_shots_by_id(self, id):
-        sql = "SELECT file, url FROM app_shots WHERE movie_id = ?"
-        self.__cursor.execute(sql, (id,))
-        return self.__cursor.fetchall()
-
-
-if __name__ == "__main__":
-    db = DBase()
-    # movies = [
-    #     {"name": "Холоп", "ori_name": "Холоп", "year": 2019, "poster": "poster_25.jpg",
-    #      "genre": "комедия",
-    #      "creators": "Россия, Yellow, Black & White",
-    #      "director": "Клим Шипенко",
-    #      "actors": "Милош Бикович, Александра Бортич, Александр Самойленко, Иван Охлобыстин, Мария Миронова мл., Олег Комаров (II), Ольга Дибцева, Кирилл Нагиев, Сергей Соцердотский, Софья Зайка",
-    #      "description": "Молодой мажор Гриша заигрался в красивую жизнь и решил, что ему всё дозволено. Он натворил много дел, и теперь ему грозит тюрьма. Чтобы исправить своего сына, отчаявшийся отец-олигарх идёт на крайние меры. Вместе с психологом он придумывает уникальный проект: на базе заброшенной деревни воссоздаётся атмосфера России XIX века, а Гриша попадает в подстроенную аварию и якобы переносится в прошлое. На самом деле над ним проводится изощрённый психологический эксперимент — избалованного мажора превращают в обычного холопа Гришку, живущего в хлеву на территории барской усадьбы. Его окружают актёры, чья цель — изменить его жизнь и личность. За каждым его движением пристально следит команда психолога с помощью множества камер. Грише предстоит заново научиться общаться с людьми, ценить простые удовольствия, работать, а также обрести истинную любовь.",
-    #      "rating_imdb": 6.7,
-    #      "rating_kinopoisk": 7.1
-    #     }
-    # ]
-    # for movie in movies:
-    #     db.add_movie(movie)
-

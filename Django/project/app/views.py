@@ -1,8 +1,4 @@
-from django.core.paginator import Paginator
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.generic import TemplateView
-# from .forms import ContactForm
 from .models import *
 from .database import DBase
 
@@ -35,9 +31,8 @@ def index_page(request, page=1):
 
 
 def movie_page(request, id: int):
-    db = DBase()
-    movie = db.get_movie_by_id(id)
-    shots = db.get_shots_by_id(id)
+    movie = Movies.objects.values().get(id=id)
+    shots = Shots.objects.values().filter(movie=id)
     if movie:
         context = {
             'title': "Каталог фильмов",
