@@ -23,4 +23,6 @@ urlpatterns = [
     path('', views.index_page),
     path('page/<int:page>/', views.index_page, name='page'),
     path('movie/<int:id>/', views.movie_page, name='movie'),
+    path('search/', views.search_page, name='search'),
+    path('search/page/<int:page>/', views.search_page, name='search_page'),
 ]

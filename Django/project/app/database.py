@@ -110,6 +110,7 @@ class DBase:
         fields = ['name', 'ori_name', 'year', 'genre', 'creators', 'director', 'actors', 'description', 'rating_imdb',
                   'rating_kinopoisk']
         if args is not None:
+            args = {key: value[0] for key, value in args.items()}       # корректировка формата аргументов
             where_lst = list()
             for key, value in args.items():
                 if key in fields and value:
