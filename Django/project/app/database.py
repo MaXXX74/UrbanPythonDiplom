@@ -9,6 +9,7 @@ def is_float(s):
     except ValueError:
         return False
 
+
 def check_or_in_field(value):
     or_lst = [" или ", " or "]
     value = value.lower()
@@ -59,13 +60,13 @@ class DBase:
 
     def delete_tables(self):
         # удаляем таблицы в БД если они есть
-        sql = """DROP TABLE IF EXISTS movies;
-                 DROP TABLE IF EXISTS shots;
+        sql = """DROP TABLE IF EXISTS app_movies;
+                 DROP TABLE IF EXISTS app_shots;
               """
         self.__cursor.executescript(sql)
 
     def create_tables(self):
-        sql = """CREATE TABLE movies(
+        sql = """CREATE TABLE app_movies(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             ori_name TEXT NOT NULL,
@@ -84,7 +85,7 @@ class DBase:
 
     def add_movie(self, movie):
         if movie:
-            sql = """INSERT INTO movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk) 
+            sql = """INSERT INTO app_movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk) 
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
             self.__cursor.execute(sql, (
                 movie["name"],
@@ -106,7 +107,7 @@ class DBase:
 
     def get_movies_for_index_page(self, page=1, args=None):
         CARDS_ON_PAGE = 8  # число карточек на одной странице
-        sql = "SELECT id, name, ori_name, year, poster FROM movies"
+        sql = "SELECT id, name, ori_name, year, poster FROM app_movies"
         fields = ['name', 'ori_name', 'year', 'genre', 'creators', 'director', 'actors', 'description', 'rating_imdb',
                   'rating_kinopoisk']
         if args is not None:
@@ -161,12 +162,12 @@ class DBase:
         return result, pages
 
     def get_movie_by_id(self, id):
-        sql = "SELECT * FROM movies WHERE id = ?"
+        sql = "SELECT * FROM app_movies WHERE id = ?"
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchone()
 
     def get_shots_by_id(self, id):
-        sql = "SELECT file, url FROM shots WHERE movie_id = ?"
+        sql = "SELECT file, url FROM app_shots WHERE movie_id = ?"
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchall()
 
