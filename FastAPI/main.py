@@ -1,5 +1,4 @@
-from fastapi import FastAPI
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -16,7 +15,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")   # пут�
 # подготовка для работы с сессиями
 secret_key = secrets.token_hex(32)                                          # генерация безопасного secret_key
 app.add_middleware(SessionMiddleware, secret_key=secret_key)                # middleware для работы с сессиями
-
 
 menu = [
     {"label": "Каталог", "link": "/"},
