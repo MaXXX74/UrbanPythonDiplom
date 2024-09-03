@@ -1,0 +1,10 @@
+<div id="bottom_menu" class="menu">
+    <div class="menu_item"><a href="/" id="back_button">Назад</a></div>
+</div>
+
+<script>
+    document.getElementById('back_button').addEventListener('click', function(event) {
+        event.preventDefault(); // предотвращаем переход по ссылке
+        window.history.back();  // выполняем действие "Назад"
+    });
+</script>

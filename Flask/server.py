@@ -27,9 +27,6 @@ def index_page(page=1):
 def search_page(page=1):
     if request.args:
         session["last_request"] = request.args
-    
-    # if request.form:
-    #     session["last_request"] = request.form
     last_request = session.get("last_request", None)
 
     db = DBase()
@@ -40,7 +37,6 @@ def search_page(page=1):
     else:
         return render_template("nodata.html", title="Нет данных", menu=menu,
                            pages=pages, source="search")
-
 
 
 @app.route("/movie/<int:id>/")
