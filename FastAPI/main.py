@@ -82,7 +82,7 @@ async def search_page(request: Request, page: int = 1):
 
 
 @app.get("/movie/{id}")
-def movie_page(request: Request, id: int):
+async def movie_page(request: Request, id: int):
     db = DBase()
     movie = db.get_movie_by_id(id)
     shots = db.get_shots_by_id(id)
