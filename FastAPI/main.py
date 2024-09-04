@@ -34,6 +34,7 @@ async def index_page(request: Request, page: int = 1):
             "menu": menu,
             "movies": movies_lst,
             "pages": pages,
+            "link": "/page/",
         }
         template_file = "index.html"
     else:
@@ -42,6 +43,7 @@ async def index_page(request: Request, page: int = 1):
             "title": "Нет данных",
             "menu": menu,
             "pages": pages,
+            "link": "/page/",
         }
         template_file = "nodata.html"
     return templates.TemplateResponse(template_file, context=context)
@@ -64,7 +66,7 @@ async def search_page(request: Request, page: int = 1):
             "menu": menu,
             "movies": movies_lst,
             "pages": pages,
-            "source": "search",
+            "link": "/search/page/",
         }
         template_file = "index.html"
     else:
@@ -73,7 +75,7 @@ async def search_page(request: Request, page: int = 1):
             "title": "Нет данных",
             "menu": menu,
             "pages": pages,
-            "source": "search",
+            "link": "/search/page/",
         }
         template_file = "nodata.html"
     return templates.TemplateResponse(template_file, context=context)

@@ -7,12 +7,6 @@
         <div class="nodata">НЕТ ДАННЫХ ДЛЯ ОТОБРАЖЕНИЯ</div>
         {% block pages %}
             <div class="line_pages">
-                {% if source %}
-                    {% set link="/search/page/" %}
-                {% else %}
-                    {% set link="/page/" %}
-                {% endif %}
-
                 {% if pages.previous %}
                 <div class="previous_page"><a href="{{ link }}{{ pages.previous }}/"><< назад [{{ pages.previous }}]</a></div>
                 {% endif %}
