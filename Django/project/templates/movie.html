@@ -11,7 +11,7 @@
                     {% if movie.rating_kinopoisk %}
                         <div class="raiting_caption">IMDb / Кинопоиск</div>
                     {% else %}
-                    <div class="raiting_caption">IMDb</div>
+                        <div class="raiting_caption">IMDb</div>
                     {% endif %}
                     <div class="raiting_value">
                         {% if movie.rating_imdb %}
@@ -61,4 +61,8 @@
             <script src="/static/js/popup_image.js"></script>    
         </div>&nbsp;
     </div>
+{% endblock %}
+
+{% block footer_menu %}
+    {% include "bottom_menu.html" %}
 {% endblock %}

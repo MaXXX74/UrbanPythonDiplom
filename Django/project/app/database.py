@@ -98,10 +98,13 @@ class DBase:
         for movie in movies:
             changed_movie = dict()
             changed_movie["id"], changed_movie["poster"] = movie["id"], movie["poster"]
-            if movie["name"] == movie["ori_name"]:
-                changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
-            else:
-                changed_movie["caption"] = f"{movie['name']} / {movie['ori_name']} / {movie['year']}"
+
+            changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
+            # if movie["name"] == movie["ori_name"]:
+            #     changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
+            # else:
+            #     changed_movie["caption"] = f"{movie['name']} / {movie['ori_name']} / {movie['year']}"
+
             result.append(changed_movie)
 
         # определяем предыдущие и последующие страницы для навигации

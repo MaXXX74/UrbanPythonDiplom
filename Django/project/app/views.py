@@ -31,25 +31,25 @@ def index_page(request, page=1):
 
 
 def movie_page(request, id: int):
-    movie = Movies.objects.values().get(id=id)
-    shots = Shots.objects.values().filter(movie=id)
-    if movie:
+    try:
+        movie = Movies.objects.values().get(id=id)
+        shots = Shots.objects.values().filter(movie=id)
         context = {
             'title': "Каталог фильмов",
             'menu': menu,
             'movie': movie,
             'shots': shots,
-            # 'link': "/page/",
+            'link': "/page/",
         }
-        return render(request,"movie.html", context=context)
-    else:
+        return render(request, "movie.html", context=context)
+    except Exception:
         context = {
             'title': "Нет данных",
             'menu': menu,
             'pages': (None, None),
-            # 'link': "/page/",
+            'link': "/page/",
         }
-        return render(request,"nodata.html", context=context)
+        return render(request, "nodata.html", context=context)
 
 
 def search_page(request, page=1):
