@@ -17,9 +17,10 @@ def index_page(page=1):
     movies_lst, pages = db.get_movies_for_index_page(page=page)
     if len(movies_lst) > 0:
         return render_template("index.html", title="Каталог фильмов", menu=menu,
-                           movies=movies_lst, pages=pages)
+                           movies=movies_lst, pages=pages, link="/page/")
     else:
-        return render_template("nodata.html", title="Нет данных", menu=menu, pages=pages)
+        return render_template("nodata.html", title="Нет данных", menu=menu,
+                           pages=pages, link="/page/")
 
 
 @app.route("/search/page/<int:page>/")
@@ -33,10 +34,10 @@ def search_page(page=1):
     movies_lst, pages = db.get_movies_for_index_page(args=last_request, page=page)
     if len(movies_lst) > 0:
         return render_template("index.html", title="Результат поиска", menu=menu,
-                           movies=movies_lst, pages=pages, source="search")
+                           movies=movies_lst, pages=pages, link="/search/page/")
     else:
         return render_template("nodata.html", title="Нет данных", menu=menu,
-                           pages=pages, source="search")
+                           pages=pages, link="/search/page/")
 
 
 @app.route("/movie/<int:id>/")
