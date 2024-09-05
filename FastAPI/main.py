@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import secrets
-from database import DBase
+from tools.database import DBase
 
 app = FastAPI()
 
@@ -86,12 +86,14 @@ async def movie_page(request: Request, id: int):
     db = DBase()
     movie = db.get_movie_by_id(id)
     shots = db.get_shots_by_id(id)
+    comments = db.get_comments_by_movie_id(movie_id=id)
     if movie:
         context = {
             "request": request,
             "menu": menu,
             "movie": movie,
             "shots": shots,
+            "comments": comments,
         }
         template_file = "movie.html"
     else:

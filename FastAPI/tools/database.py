@@ -1,5 +1,6 @@
 import sqlite3
 import re
+from tools.time_tools import sec_to_datetime
 
 
 def is_float(s):
@@ -8,6 +9,7 @@ def is_float(s):
         return True
     except ValueError:
         return False
+
 
 def check_or_in_field(value):
     or_lst = [" или ", " or "]
@@ -50,13 +52,13 @@ def get_and_in_field(key, value):
     return f"({result})"
 
 
-
 class DBase:
-    def __init__(self):
-        self.__conn = sqlite3.connect("movies.db")
+    def __init__(self, path="movies.db"):
+        self.__conn = sqlite3.connect(path)
         self.__cursor = sqlite3.Cursor(self.__conn)
         self.__cursor.row_factory = sqlite3.Row
 
+    # Работа с таблицами
     def delete_tables(self):
         # удаляем таблицы в БД если они есть
         sql = """DROP TABLE IF EXISTS movies;
@@ -65,7 +67,7 @@ class DBase:
         self.__cursor.executescript(sql)
 
     def create_tables(self):
-        sql = """CREATE TABLE movies(
+        sql = """CREATE TABLE IF NOT EXISTS movies(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             ori_name TEXT NOT NULL,
@@ -77,10 +79,26 @@ class DBase:
             actors TEXT NOT NULL,
             description TEXT NOT NULL,
             rating_imdb REAL,
-            rating_kinopoisk REAL
-        );
+            rating_kinopoisk REAL);
+            
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            login VARCHAR(50) NOT NULL,
+            name VARCHAR(50) NOT NULL,
+            password_hash VARCHAR(64) NOT NULL);
+            
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            movie_id INTEGER NOT NULL, 
+            text TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (movie_id) REFERENCES movies(id)); 
         """
-        self.__cursor.execute(sql)
+        self.__cursor.executescript(sql)
+
+    #===============================================================
 
     def add_movie(self, movie):
         if movie:
@@ -115,21 +133,21 @@ class DBase:
                 if key in fields and value:
                     if isinstance(value, str):  # убираем пробелы в начале и конце значения параметра
                         value = value.strip()
-                    if key.startswith("rating"):                        # рейтинги обрабатываем по-особому
+                    if key.startswith("rating"):  # рейтинги обрабатываем по-особому
                         if is_float(value):
                             condition = f"{key} >= {value}"
                             where_lst.append(condition)
-                    else:                                               # иначе это обычное поле
-                        if key == 'name' or key == 'ori_name':          # для названий условия не проверяем
+                    else:  # иначе это обычное поле
+                        if key == 'name' or key == 'ori_name':  # для названий условия не проверяем
                             condition = f"{key} LIKE '%{value}%'"
-                        elif check_or_in_field(value):                  # для остальных проверяем, есть ли ИЛИ
+                        elif check_or_in_field(value):  # для остальных проверяем, есть ли ИЛИ
                             condition = get_or_in_field(key, value)
-                        elif check_and_in_field(value):                 # или условие И
+                        elif check_and_in_field(value):  # или условие И
                             condition = get_and_in_field(key, value)
-                        else:                                           # или в поле обычный текст
+                        else:  # или в поле обычный текст
                             condition = f"{key} LIKE '%{value}%'"
                         where_lst.append(condition)
-            if len(where_lst) > 0:                                      # если собрали условия - добавляем в запрос
+            if len(where_lst) > 0:  # если собрали условия - добавляем в запрос
                 where_str = " WHERE " + " AND ".join(where_lst)
                 sql += where_str
 
@@ -169,9 +187,27 @@ class DBase:
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchall()
 
+    # ===============================================================
+
+    def get_comments_by_movie_id(self, movie_id: int):
+        sql = """SELECT login AS user, text, created_at FROM comments 
+        INNER JOIN users ON user_id = users.id
+        WHERE movie_id = ? ORDER BY created_at DESC"""
+
+        self.__cursor.execute(sql, (movie_id,))
+        comments = self.__cursor.fetchall()
+        result = list()
+        for comment in comments:
+            comment_changed = dict()
+            comment_changed["user"] = comment["user"]
+            comment_changed["text"] = comment["text"]
+            comment_changed["created_at"] = sec_to_datetime(comment["created_at"])
+            result.append(comment_changed)
+        return result
+
 
 if __name__ == "__main__":
-    db = DBase()
+    db = DBase(path="../movies.db")
     # movies = [
     #     {"name": "Холоп", "ori_name": "Холоп", "year": 2019, "poster": "poster_25.jpg",
     #      "genre": "комедия",
@@ -185,4 +221,5 @@ if __name__ == "__main__":
     # ]
     # for movie in movies:
     #     db.add_movie(movie)
-
+    res = db.get_comments_by_movie_id(movie_id=1)
+    print(res)

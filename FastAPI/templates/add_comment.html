@@ -1,0 +1,28 @@
+<!-- модальное окно добавления нового комментария -->
+<div id="add_comment" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Новый комментарий:</h2>
+        <form id="comment_form" action='/comment/add/' method='GET' autocomplete="off">
+            <div class="form-group">
+                <label for="user_id">ID пользователя:</label>
+                <input type="text" id="user_id" name="user_id">
+            </div>
+            <div class="form-group">
+                <label for="movie_id">ID фильма/сериала:</label>
+                <input type="text" id="movie_id" name="user_id">
+            </div>
+            <div class="form-group">
+                <label for="text">Текст комментария:</label>
+                <input type="text" id="text" name="text">
+            </div>
+            <div class="form-buttons">
+                <button type="submit" id="add_comment_button" disabled>Добавить</button>
+                <button type="button" id="clear_comment_button">Очистить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- скрипт для открытия и закрытия модального окна добавления комментариев -->
+<script src="/static/js/add_comment.js"></script>

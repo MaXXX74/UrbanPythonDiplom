@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/find.css">
     <link rel="stylesheet" href="/static/css/popup_image.css">
+    <link rel="stylesheet" href="/static/css/comments.css">
+	<script src="/static/js/comments.js"></script>
     <title>{% block title %} {% endblock %}</title>
 </head>
 <body>
@@ -23,9 +25,12 @@
     {% block content %}
     {% endblock %}
 
+    {% block comments %}
+    {% endblock %}
+
     {% block footer_menu %}
     {% endblock %}
 
-    {% extends "find.html" %}
+    {% include "find.html" %}
 </body>
 </html>
