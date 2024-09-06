@@ -1,5 +1,6 @@
 import sqlite3
 import re
+import time
 from tools.time_tools import sec_to_datetime
 
 
@@ -98,7 +99,7 @@ class DBase:
         """
         self.__cursor.executescript(sql)
 
-    #===============================================================
+    # ===============================================================
 
     def add_movie(self, movie):
         if movie:
@@ -189,12 +190,16 @@ class DBase:
 
     # ===============================================================
 
-    def get_comments_by_movie_id(self, movie_id: int):
-        sql = """SELECT login AS user, text, created_at FROM comments 
-        INNER JOIN users ON user_id = users.id
-        WHERE movie_id = ? ORDER BY created_at DESC"""
-
-        self.__cursor.execute(sql, (movie_id,))
+    def get_comments(self, movie_id: int = None):
+        sql = """SELECT login AS user, text, created_at FROM comments INNER JOIN users ON user_id = users.id """
+        if movie_id is not None:
+            sql += "WHERE movie_id = ? "
+        else:
+            sql += "ORDER BY created_at DESC"
+        if movie_id is None:
+            self.__cursor.execute(sql)
+        else:
+            self.__cursor.execute(sql, (movie_id,))
         comments = self.__cursor.fetchall()
         result = list()
         for comment in comments:
@@ -204,6 +209,15 @@ class DBase:
             comment_changed["created_at"] = sec_to_datetime(comment["created_at"])
             result.append(comment_changed)
         return result
+
+    def add_comment(self, user_id=None, movie_id=None, text="", created_at=None):
+        if created_at is None:
+            created_at = time.time()
+        if movie_id is None or text.strip() == "":
+            return
+        sql = """INSERT INTO comments (user_id, movie_id, text, created_at) VALUES (?, ?, ?, ?)"""
+        self.__cursor.execute(sql, (user_id, movie_id, text, created_at))
+        self.__conn.commit()
 
 
 if __name__ == "__main__":
@@ -221,5 +235,8 @@ if __name__ == "__main__":
     # ]
     # for movie in movies:
     #     db.add_movie(movie)
-    res = db.get_comments_by_movie_id(movie_id=1)
-    print(res)
+    # db.add_comment(user_id=1, movie_id=6, text="Фильм 6, комментарий 4")
+    # res = db.get_comments(movie_id=6)
+    res = db.get_comments()
+    for record in res:
+        print(record)

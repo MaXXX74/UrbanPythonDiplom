@@ -1,6 +1,6 @@
-/* Модальное окно */
+/* Стили для модальных окон */
 .modal {
-    display: none; /* Скрыто по умолчанию */
+    display: none;  /* Скрыто по умолчанию */
     position: fixed;
     z-index: 1; /* Находится на переднем плане */
     left: 0;
@@ -77,7 +77,7 @@
     margin-top: 10px;
 }
 
-#search_form button {
+.button_in_form {
     font-family:Verdana, Geneva, Tahoma, sans-serif;
     font-size: 14px;
     flex: 1;
@@ -90,12 +90,12 @@
     margin: 0 5px;
 }
 
-#search_form button:hover {
+.button_in_form:hover {
     background-color: #555;
     color: gold;
 }
 
-#search_form button:disabled {
+.button_in_form:disabled {
     background-color: #777;
     cursor: not-allowed;
 }
