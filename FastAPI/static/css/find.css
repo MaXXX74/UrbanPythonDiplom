@@ -19,7 +19,7 @@
     padding: 20px;
     border: 1px solid #888;
     width: 90%; /* Увеличиваем ширину модального окна */
-    max-width: 500px; /* Максимальная ширина модального окна */
+    max-width: 553px; /* Максимальная ширина модального окна */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }

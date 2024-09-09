@@ -28,8 +28,9 @@ def sec_to_datetime(sec: Optional[int | str] = None, fmt: str = '%d/%m/%Y %H:%M:
         >>> sec_to_datetime(sec='1725492668', fmt='%Y/%m/%d %H:%M:%S')
         '2024/09/05 02:31:08'
     """
+
     if sec is None:
-        sec = time.time()           # используем текущее время, если sec не указано
+        sec = int(time.time())           # используем текущее время, если sec не указано
     try:
         sec = int(sec)              # проверка корректности преобразования
     except (TypeError, ValueError):

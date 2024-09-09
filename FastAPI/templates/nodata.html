@@ -3,8 +3,9 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <div id="main_content">
-        <div class="nodata">НЕТ ДАННЫХ ДЛЯ ОТОБРАЖЕНИЯ</div>
+<div id="nodata_out">
+    <div id="nodata_content">
+        <div class="nodata">Нет данных для отображения</div>
         {% block pages %}
             <div class="line_pages">
                 {% if pages.previous %}
@@ -16,9 +17,5 @@
             </div>
         {% endblock %}
     </div>
+</div>
 {% endblock %}
-
-{% block footer_menu %}
-    {% include "bottom_menu.html" %}
-{% endblock %}
-

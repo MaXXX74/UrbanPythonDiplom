@@ -3,13 +3,12 @@
     <div class="modal-content">
         <span id="comment_span_id" class="close">&times;</span>
         <h2>Новый комментарий:</h2>
-        <form id="comment_form" action='/comment/add/' method='GET' autocomplete="off">
-            <input type="hidden" id="user_id" name="user_id" value="1">
-            <input type="hidden" id="movie_id" name="movie_id" value="{{ movie.id }}">
+        <form id="comment_form" action='/comment/add/' method='POST' autocomplete="off">
+            <input type="hidden" id="user_id" name="user_id" value=1>
+            <input type="hidden" id="movie_id" name="movie_id" value={{ movie.id }}>
             <div class="form-group">
-                <textarea id="comment_text" name="text" rows="15" cols="68" placeholder="Введите ваш комментарий"></textarea>
+                <textarea id="comment_text" name="text" rows="15" cols="66" placeholder="Введите ваш комментарий" style="font-size: 14px;"></textarea>
             </div>
-            <input type="hidden" id="created_at" name="created_at" value="1725482668">
             <div class="form-buttons">
                 <button type="submit" id="comment_submit_button" class="button_in_form" disabled>Отправить</button>
                 <button type="button" id="comment_clear_button" class="button_in_form">Очистить</button>

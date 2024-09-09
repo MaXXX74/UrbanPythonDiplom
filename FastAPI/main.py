@@ -3,24 +3,31 @@
 
 Команда запуска из корня проекта: python -m uvicorn main:app
 """
+from typing import Annotated
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, status, Depends, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import insert
+from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import secrets
 from tools.database import DBase
+from backend.db_depends import get_db
+from models.comment import Comment
+import time, re, html
 
 app = FastAPI()
 
 # пути для шаблонов и статическим файлам
-templates = Jinja2Templates(directory="templates")                          # путь к директории с шаблонами
-app.mount("/static", StaticFiles(directory="static"), name="static")   # путь к статическим файлам
+templates = Jinja2Templates(directory="templates")              # путь к директории с шаблонами
+app.mount("/static", StaticFiles(directory="static"), name="static")  # путь к статическим файлам
 
 # подготовка для работы с сессиями
-secret_key = secrets.token_hex(32)                                          # генерация безопасного secret_key
-app.add_middleware(SessionMiddleware, secret_key=secret_key)                # middleware для работы с сессиями
+secret_key = secrets.token_hex(32)                              # генерация безопасного secret_key
+app.add_middleware(SessionMiddleware, secret_key=secret_key)    # middleware для работы с сессиями
 
 # элементы верхнего меню
 menu = [
@@ -28,7 +35,89 @@ menu = [
     {"label": "Поиск", "link": "#", "id": "search_button"}
 ]
 
+import re
+import html
 
+
+def clean_comment(comment: str) -> str:
+    """
+    Очищает и форматирует текст комментария.
+
+    Эта функция выполняет несколько действий для обработки текста комментария:
+    1. Удаляет пробелы в начале и конце строки.
+    2. Удаляет любые HTML-теги из текста.
+    3. Экранирует специальные символы для предотвращения XSS-атак.
+    4. Заменяет последовательности переводов строки на HTML-тег <br>.
+    5. Убирает лишние пробелы, заменяя их на одиночные пробелы.
+
+    Args:
+        comment (str): Исходный текст комментария.
+
+    Returns:
+        str: Очищенный и форматированный текст комментария.
+    """
+    # убираем лишние пробелы в начале и конце строки
+    cleaned_comment = comment.strip()
+
+    # убираем все HTML-теги
+    cleaned_comment = re.sub(r'<.*?>', '', cleaned_comment)
+
+    # экранируем специальные символы для предотвращения XSS-атак
+    cleaned_comment = html.escape(cleaned_comment)
+
+    # заменяем один или несколько переводов строки на один <br>
+    cleaned_comment = re.sub(r'(\r\n)+', '<br>', cleaned_comment)
+    cleaned_comment = re.sub('r\n+', '<br>', cleaned_comment)
+
+    # заменяем один или несколько пробелов на один
+    cleaned_comment = re.sub(r'\s+', ' ', cleaned_comment)
+
+    return cleaned_comment
+
+
+# обработчик для ошибки 404
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request: Request, exc: StarletteHTTPException):
+    """
+    Обрабатывает исключения HTTP, в частности ошибку 404 (Not Found).
+
+    Этот обработчик проверяет статус ошибки и, если это ошибка 404, возвращает
+    сгенерированный HTML-ответ с использованием шаблона "nodata.html". В противном случае,
+    возвращает простое сообщение об ошибке с кодом ответа HTTP.
+
+    Args:
+        request (Request): Запрос, который привел к ошибке.
+        exc (StarletteHTTPException): Исключение, содержащее информацию об ошибке HTTP.
+
+    Returns:
+        TemplateResponse или HTMLResponse: Возвращает HTML-ответ в случае ошибки 404,
+        либо текстовый ответ для других HTTP-ошибок.
+
+    Context (для шаблона):
+        - request (Request): Объект запроса.
+        - title (str): Заголовок страницы ("Нет данных").
+        - menu (list): Меню, используемое для отображения на странице (пример).
+        - pages (tuple): Пара для навигации по страницам (пример).
+
+    Примеры ошибок:
+        - Если статус код ошибки 404, возвращается страница с ошибкой, используя шаблон.
+        - Для других ошибок возвращается сообщение с описанием ошибки.
+    """
+    if exc.status_code == 404:
+        context = {
+            "request": request,
+            "title": "Нет данных",
+            "menu": menu,
+            "pages": (None, None),
+        }
+        # возвращаем HTML-ответ с использованием шаблона "nodata.html"
+        return templates.TemplateResponse("nodata.html", context=context, status_code=404)
+
+    # для других ошибок возвращаем HTML-ответ с текстом ошибки
+    return HTMLResponse(f"Error: {exc.detail}", status_code=exc.status_code)
+
+
+# страницы каталога
 @app.get("/", response_class=HTMLResponse)
 @app.get("/page/{page}", response_class=HTMLResponse)
 async def index_page(request: Request, page: int = 1):
@@ -70,6 +159,7 @@ async def index_page(request: Request, page: int = 1):
     return templates.TemplateResponse(template_file, context=context)
 
 
+# страницы с результатами поиска
 @app.get("/search/page/{page}", response_class=HTMLResponse)
 @app.get("/search/", response_class=HTMLResponse)
 async def search_page(request: Request, page: int = 1):
@@ -118,6 +208,7 @@ async def search_page(request: Request, page: int = 1):
     return templates.TemplateResponse(template_file, context=context)
 
 
+# страница с информацией о фильме
 @app.get("/movie/{id}", response_class=HTMLResponse)
 async def movie_page(request: Request, id: int):
     """
@@ -156,3 +247,21 @@ async def movie_page(request: Request, id: int):
             "pages": (None, None),
         }
     return templates.TemplateResponse(template_file, context=context)
+
+
+
+# обработка добавления нового комментария
+@app.post("/comment/add/")
+async def add_comment(
+        db: Annotated[Session, Depends(get_db)],
+        user_id: int = Form(...),
+        movie_id: int = Form(...),
+        text: str = Form()):
+    text = clean_comment(text)
+    if text and text != "<br>":
+        db.execute(insert(Comment).values(user_id=user_id,
+                                          movie_id=movie_id,
+                                          text=text,
+                                          created_at=int(time.time())))
+        db.commit()
+    return RedirectResponse(url=f"/movie/{movie_id}", status_code=status.HTTP_303_SEE_OTHER)

@@ -78,9 +78,11 @@
         {% for comment in comments %}
         <div class="comment">
             <div class="comment_author">{{ comment.user }}</div>
+            <br>
             <div class="comment_text">
-                {{ comment.text }}
+                {{ comment.text | safe }}
             </div>
+            <br>
             <div class="comment_date">{{ comment.created_at }}</div>
         </div>
         {% endfor %}

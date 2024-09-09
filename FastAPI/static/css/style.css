@@ -57,11 +57,33 @@ body {
     border-radius: 5px;
 }
 
+#nodata_out {
+    display: flex;
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали */
+    min-height: 100vh; /* Минимальная высота на весь экран */
+}
+
+#nodata_content {
+    max-width: 1000px;
+    max-height: 1320px;
+    margin: 0 auto;
+    padding-top: 50px;
+    padding-bottom: 0px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
 .nodata {
     color:gold;
     font-family:Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     text-align: center;
+    min-width: 500px;
+    margin-bottom: 50px;
 }    
 
 /* Контейнер для карточек */

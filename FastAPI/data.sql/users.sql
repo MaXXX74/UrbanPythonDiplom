@@ -1,0 +1,4 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+INSERT INTO users VALUES(1,'admin','Anonymous','e5909c3cc473fb34a1af4470eb9f01091191aaa7aa625dcd637708ca303b9af6');
+COMMIT;
