@@ -1,0 +1,110 @@
+/* Оставляем вертикальный скролл-бар для предотвращения смещения страницы */
+body {
+    overflow-x: hidden; /* Убирает горизонтальный скролл-бар */
+    overflow-y: scroll; /* Оставляет вертикальный скролл-бар */
+}
+
+/* Стили для Webkit-браузеров */
+body::-webkit-scrollbar {
+    height: 0; /* Убирает горизонтальный скролл-бар */
+    width: 0px; /* Задает ширину вертикального скролл-бара */
+}
+
+
+/*****************************************************/
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+/*****************************************************/
+
+#comments_section {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    max-width: 1000px; /* Ограничиваем ширину блока */
+    margin-top:10px;
+	margin-bottom:40px;
+	padding-top: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    color: #fff; /* Белый текст */
+    margin-left: auto;  /* Центрирование блока */
+    margin-right: auto; /* Центрирование блока */
+}
+
+#inner_comments {
+/*    display: flex; */
+    flex-wrap: wrap;
+    justify-content: space-around;
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    padding-top: 15px;
+    padding-right: 15px;
+    padding-bottom: 3px;
+    padding-left: 15px;
+    box-sizing: border-box;
+}
+
+#comments_section h2 {
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    border-bottom: 2px solid #555; /* Более темный оттенок для разделительной линии */
+	padding-top: 0px;
+    padding-bottom: 5px;
+    color: #fff; /* Белый текст */
+}
+
+.comment {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #555; /* Более темная граница */
+    border-radius: 5px;
+    background-color: #111; /* Темный фон для комментария */
+    color: #ddd; /* Более светлый текст */
+}
+
+.comment_author {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.comment_title {
+    padding-bottom: 10px;
+    color:gold;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 16px;
+    text-align: center;
+}
+
+.comment_text {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.comment_date {
+    font-size: 12px;
+    color: #bbb; /* Светло-серый текст для даты */
+}
+
+#add_comment_button {
+    background-color: #555; /* Темно-серый фон */
+    color: #fff; /* Белый текст */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#add_comment_button:hover {
+    background-color: #777; /* Светлее при наведении */
+}

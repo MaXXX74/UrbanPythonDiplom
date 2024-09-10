@@ -1,15 +1,40 @@
+"""
+Модуль для работы с базой данных фильмов
+"""
+
 import sqlite3
 import re
+import time
+from tools.time_tools import sec_to_datetime
 
 
-def is_float(s):
+def is_float(s: str) -> bool:
+    """
+    Проверяет, можно ли преобразовать строку в число с плавающей точкой.
+
+    Args:
+        s (str): строка для проверки
+
+    Returns:
+        bool: True, если строку можно преобразовать в float, иначе False.
+    """
     try:
         float(s)
         return True
     except ValueError:
         return False
 
-def check_or_in_field(value):
+
+def check_or_in_field(value: str) -> bool:
+    """
+    Проверяет, содержит ли строка ключевые слова "или" или "or".
+
+    Args:
+        value (str): строка для проверки.
+
+    Returns:
+        bool: True, если строка содержит "или" или "or" в любом регистре, иначе False.
+    """
     or_lst = [" или ", " or "]
     value = value.lower()
     for item in or_lst:
@@ -18,7 +43,16 @@ def check_or_in_field(value):
     return False
 
 
-def check_and_in_field(value):
+def check_and_in_field(value: str) -> bool:
+    """
+    Проверяет, содержит ли строка ключевые слова "и" или "and".
+
+    Args:
+        value (str): строка для проверки.
+
+    Returns:
+        bool: True, если строка содержит "и" или "and" в любом регистре, иначе False.
+    """
     or_lst = [" и ", " and "]
     value = value.lower()
     for item in or_lst:
@@ -27,7 +61,17 @@ def check_and_in_field(value):
     return False
 
 
-def get_or_in_field(key, value):
+def get_or_in_field(key: str, value: str) -> str:
+    """
+    Формирует SQL-запрос с условием "OR" для поля.
+
+    Args:
+        key (str): Имя поля.
+        value (str): Значение для проверки.
+
+    Returns:
+        str: SQL-запрос с условием "OR".
+    """
     fields = re.split(r"(?: или | or | ИЛИ | OR )", value)
     or_lst = list()
     for field in fields:
@@ -40,7 +84,17 @@ def get_or_in_field(key, value):
     return f"({result})"
 
 
-def get_and_in_field(key, value):
+def get_and_in_field(key: str, value: str) -> str:
+    """
+    Формирует SQL-запрос с условием "AND" для поля.
+
+    Args:
+        key (str): имя поля.
+        value (str): значение для проверки.
+
+    Returns:
+        str: SQL-запрос с условием "AND".
+    """
     fields = re.split(r"(?: и | and | И | AND )", value)
     or_lst = list()
     for field in fields:
@@ -50,39 +104,94 @@ def get_and_in_field(key, value):
     return f"({result})"
 
 
-
 class DBase:
-    def __init__(self):
-        self.__conn = sqlite3.connect("static/db/movies.db")
+    """
+    Класс для работы с базой данных SQLite.
+
+    Attributes:
+        __conn (sqlite3.Connection): подключение к базе данных.
+        __cursor (sqlite3.Cursor): курсор для выполнения SQL-запросов.
+    """
+
+    def __init__(self, path="movies.db"):
+        """
+        Инициализация класса DBase с подключением к базе данных SQLite.
+
+        Args:
+            path (str): путь к файлу базы данных.
+        """
+        self.__conn = sqlite3.connect(path)
         self.__cursor = sqlite3.Cursor(self.__conn)
         self.__cursor.row_factory = sqlite3.Row
 
     def delete_tables(self):
-        # удаляем таблицы в БД если они есть
-        sql = """DROP TABLE IF EXISTS movies;
+        """
+        Удаляет таблицы из базы данных фильмов, если они существуют.
+        """
+        sql = '''DROP TABLE IF EXISTS users;
+                 DROP TABLE IF EXISTS movies;
                  DROP TABLE IF EXISTS shots;
-              """
+                 DROP TABLE IF EXISTS comments;
+              '''
         self.__cursor.executescript(sql)
 
     def create_tables(self):
-        sql = """CREATE TABLE movies(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            ori_name TEXT NOT NULL,
-            year INTEGER NOT NULL,
-            poster TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            creators TEXT NOT NULL,
-            director TEXT NOT NULL,
-            actors TEXT NOT NULL,
-            description TEXT NOT NULL,
-            rating_imdb REAL,
-            rating_kinopoisk REAL
-        );
         """
-        self.__cursor.execute(sql)
+        Создает таблицы в базе данных, если они еще не существуют.
+        """
+        sql = '''CREATE TABLE IF NOT EXISTS users(
+            id INTEGER NOT NULL, 
+            login VARCHAR(50) NOT NULL, 
+            name VARCHAR(50) NOT NULL, 
+            password_hash VARCHAR(64) NOT NULL, 
+            PRIMARY KEY (id)
+            );
+        
+            CREATE TABLE IF NOT EXISTS movies (
+            id INTEGER NOT NULL, 
+            name TEXT NOT NULL, 
+            ori_name TEXT NOT NULL, 
+            year INTEGER NOT NULL, 
+            poster TEXT NOT NULL, 
+            genre TEXT NOT NULL, 
+            creators TEXT NOT NULL, 
+            director TEXT NOT NULL, 
+            actors TEXT NOT NULL, 
+            description TEXT NOT NULL, 
+            rating_imdb FLOAT, 
+            rating_kinopoisk FLOAT, 
+            PRIMARY KEY (id)
+            );
 
-    def add_movie(self, movie):
+        CREATE TABLE IF NOT EXISTS shots (
+            id INTEGER NOT NULL, 
+            file TEXT NOT NULL, 
+            movie_id INTEGER NOT NULL, 
+            url TEXT NOT NULL, 
+            PRIMARY KEY (id), 
+            FOREIGN KEY(movie_id) REFERENCES movies (id)
+            );        
+
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER NOT NULL, 
+            user_id INTEGER, 
+            movie_id INTEGER NOT NULL, 
+            text TEXT NOT NULL, 
+            created_at INTEGER NOT NULL, 
+            PRIMARY KEY (id), 
+            FOREIGN KEY(movie_id) REFERENCES movies (id), 
+            FOREIGN KEY(user_id) REFERENCES users (id)
+            ); 
+        '''
+        self.__cursor.executescript(sql)
+
+    def add_movie(self, movie: dict):
+        """
+        Добавляет фильм в базу данных.
+
+        Args:
+            movie (dict): словарь с данными о фильме.
+        """
         if movie:
             sql = """INSERT INTO movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk) 
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
@@ -98,14 +207,23 @@ class DBase:
                 movie["description"],
                 movie["rating_imdb"],
                 movie["rating_kinopoisk"]
-            )
-                                  )
+            ))
             self.__conn.commit()
         else:
             print("Ошибка добавления фильма в БД")
 
-    def get_movies_for_index_page(self, page=1, args=None):
-        CARDS_ON_PAGE = 8  # число карточек на одной странице
+    def get_movies_for_index_page(self, page: int = 1, args: dict = None):
+        """
+        Получает список фильмов для отображения на главной странице.
+
+        Args:
+            page (int): номер страницы.
+            args (dict): фильтры для поиска фильмов.
+
+        Returns:
+            list, dict: список фильмов и информация о навигации по страницам.
+        """
+        CARDS_ON_PAGE = 8
         sql = "SELECT id, name, ori_name, year, poster FROM movies"
         fields = ['name', 'ori_name', 'year', 'genre', 'creators', 'director', 'actors', 'description', 'rating_imdb',
                   'rating_kinopoisk']
@@ -113,76 +231,108 @@ class DBase:
             where_lst = list()
             for key, value in args.items():
                 if key in fields and value:
-                    if isinstance(value, str):  # убираем пробелы в начале и конце значения параметра
-                        value = value.strip()
-                    if key.startswith("rating"):                        # рейтинги обрабатываем по-особому
+                    value = value.strip() if isinstance(value, str) else value
+                    if key.startswith("rating"):
                         if is_float(value):
                             condition = f"{key} >= {value}"
                             where_lst.append(condition)
-                    else:                                               # иначе это обычное поле
-                        if key == 'name' or key == 'ori_name':          # для названий условия не проверяем
+                    else:
+                        if key == 'name' or key == 'ori_name':
                             condition = f"{key} LIKE '%{value}%'"
-                        elif check_or_in_field(value):                  # для остальных проверяем, есть ли ИЛИ
+                        elif check_or_in_field(value):
                             condition = get_or_in_field(key, value)
-                        elif check_and_in_field(value):                 # или условие И
+                        elif check_and_in_field(value):
                             condition = get_and_in_field(key, value)
-                        else:                                           # или в поле обычный текст
+                        else:
                             condition = f"{key} LIKE '%{value}%'"
                         where_lst.append(condition)
-            if len(where_lst) > 0:                                      # если собрали условия - добавляем в запрос
-                where_str = " WHERE " + " AND ".join(where_lst)
-                sql += where_str
+            if where_lst:
+                sql += " WHERE " + " AND ".join(where_lst)
 
-        # сколько пропускаем записей при переходе по страницам
         skip_recs = (page - 1) * CARDS_ON_PAGE
-
-        sql += f" ORDER BY rating_imdb DESC LIMIT {CARDS_ON_PAGE} OFFSET {skip_recs};"
-        # print(sql)
+        sql += f" ORDER BY year DESC, rating_imdb DESC LIMIT {CARDS_ON_PAGE} OFFSET {skip_recs};"
         self.__cursor.execute(sql)
         movies = self.__cursor.fetchall()
-        result = list()
+
+        result = []
         for movie in movies:
-            changed_movie = dict()
-            changed_movie["id"], changed_movie["poster"] = movie["id"], movie["poster"]
-            if movie["name"] == movie["ori_name"]:
-                changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
-            else:
-                changed_movie["caption"] = f"{movie['name']} / {movie['ori_name']} / {movie['year']}"
+            changed_movie = {
+                "id": movie["id"],
+                "poster": movie["poster"],
+                "caption": f"{movie['name']} / {movie['ori_name']} / {movie['year']}" if movie["name"] != movie[
+                    "ori_name"]
+                else f"{movie['name']} / {movie['year']}"
+            }
             result.append(changed_movie)
 
-        # определяем предыдущие и последующие страницы для навигации
-        pages = {"previous": None, "next": None}
-        if page > 1:
-            pages["previous"] = page - 1
-        if len(result) == CARDS_ON_PAGE:
-            pages["next"] = page + 1
-
+        pages = {"previous": page - 1 if page > 1 else None, "next": page + 1 if len(result) == CARDS_ON_PAGE else None}
         return result, pages
 
-    def get_movie_by_id(self, id):
+    def get_movie_by_id(self, id: int):
+        """
+        Получает данные о фильме по его ID.
+
+        Args:
+            id (int): id фильма.
+
+        Returns:
+            sqlite3.Row: подробная информация о фильме.
+        """
         sql = "SELECT * FROM movies WHERE id = ?"
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchone()
 
-    def get_shots_by_id(self, id):
+    def get_shots_by_id(self, id: int):
+        """
+        Получает скриншоты по ID фильма.
+
+        Args:
+            id (int): id фильма.
+
+        Returns:
+            list: список скриншотов.
+        """
         sql = "SELECT file, url FROM shots WHERE movie_id = ?"
         self.__cursor.execute(sql, (id,))
         return self.__cursor.fetchall()
 
+    def get_comments(self, movie_id: int = None):
+        """
+        Возвращает список комментариев к фильму.
 
-if __name__ == "__main__":
-    db = DBase()
-    # movies = [
-    #     {"name": "Холоп", "ori_name": "Холоп", "year": 2019, "poster": "poster_25.jpg",
-    #      "genre": "комедия",
-    #      "creators": "Россия, Yellow, Black & White",
-    #      "director": "Клим Шипенко",
-    #      "actors": "Милош Бикович, Александра Бортич, Александр Самойленко, Иван Охлобыстин, Мария Миронова мл., Олег Комаров (II), Ольга Дибцева, Кирилл Нагиев, Сергей Соцердотский, Софья Зайка",
-    #      "description": "Молодой мажор Гриша заигрался в красивую жизнь и решил, что ему всё дозволено. Он натворил много дел, и теперь ему грозит тюрьма. Чтобы исправить своего сына, отчаявшийся отец-олигарх идёт на крайние меры. Вместе с психологом он придумывает уникальный проект: на базе заброшенной деревни воссоздаётся атмосфера России XIX века, а Гриша попадает в подстроенную аварию и якобы переносится в прошлое. На самом деле над ним проводится изощрённый психологический эксперимент — избалованного мажора превращают в обычного холопа Гришку, живущего в хлеву на территории барской усадьбы. Его окружают актёры, чья цель — изменить его жизнь и личность. За каждым его движением пристально следит команда психолога с помощью множества камер. Грише предстоит заново научиться общаться с людьми, ценить простые удовольствия, работать, а также обрести истинную любовь.",
-    #      "rating_imdb": 6.7,
-    #      "rating_kinopoisk": 7.1
-    #     }
-    # ]
-    # for movie in movies:
-    #     db.add_movie(movie)
+        Args:
+            movie_id (int): id фильма (опционально).
 
+        Returns:
+            list: список комментариев.
+        """
+        sql = """SELECT name AS user, text, created_at FROM comments INNER JOIN users ON user_id = users.id """
+        if movie_id is not None:
+            sql += "WHERE movie_id = ? ORDER BY created_at DESC"
+
+        self.__cursor.execute(sql, (movie_id,) if movie_id else None)
+        comments = self.__cursor.fetchall()
+
+        result = [
+            {"user": comment["user"], "text": comment["text"], "created_at": sec_to_datetime(comment["created_at"])}
+            for comment in comments]
+        return result
+
+    def add_comment(self, user_id: int = None, movie_id: int = None, text: str = "", created_at: int = None):
+        """
+        Добавляет комментарий к фильму.
+
+        Args:
+            user_id (int): id пользователя.
+            movie_id (int): id фильма.
+            text (str): текст комментария.
+            created_at (int): время создания комментария (опционально, по умолчанию текущее время).
+        """
+        if created_at is None:
+            created_at = int(time.time())
+        if movie_id is None or text.strip() == "":
+            return
+
+        sql = """INSERT INTO comments (user_id, movie_id, text, created_at) VALUES (?, ?, ?, ?)"""
+        self.__cursor.execute(sql, (user_id, movie_id, text, created_at))
+        self.__conn.commit()
