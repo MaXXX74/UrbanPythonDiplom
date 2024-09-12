@@ -1,0 +1,19 @@
+<!-- модальное окно добавления нового комментария -->
+<div id="comment_window" class="modal">
+    <div class="modal-content">
+        <span id="comment_span_id" class="close">&times;</span>
+        <h2>Новый комментарий:</h2>
+        <form id="comment_form" action='/comment/add/' method='POST' autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" id="user_id" name="user_id" value=1>
+            <input type="hidden" id="movie_id" name="movie_id" value={{ movie.id }}>
+            <div class="form-group">
+                <textarea id="comment_text" name="text" rows="15" cols="66" placeholder="Введите ваш комментарий" style="font-size: 14px;"></textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" id="comment_submit_button" class="button_in_form" disabled>Отправить</button>
+                <button type="button" id="comment_clear_button" class="button_in_form">Очистить</button>
+            </div>
+        </form>
+    </div>
+</div>

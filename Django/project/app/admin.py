@@ -13,3 +13,10 @@ class MoviesAdmin(admin.ModelAdmin):
 class ShotsAdmin(admin.ModelAdmin):
     list_display = ('movie', 'file', 'url')
     list_filter = ('movie',)
+
+
+@admin.register(Comments)
+class CommentsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'movie', 'text_short', 'created_at_formatted')
+    list_filter = ('movie',)
+

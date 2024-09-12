@@ -1,5 +1,7 @@
 import sqlite3
 import re
+import time
+from app.tools import get_comment_for_html, sec_to_datetime
 
 
 def is_float(s):
@@ -94,17 +96,16 @@ class DBase:
         # print(sql)
         self.__cursor.execute(sql)
         movies = self.__cursor.fetchall()
-        result = list()
+        
+        result = []
         for movie in movies:
-            changed_movie = dict()
-            changed_movie["id"], changed_movie["poster"] = movie["id"], movie["poster"]
-
-            changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
-            # if movie["name"] == movie["ori_name"]:
-            #     changed_movie["caption"] = f"{movie['name']} / {movie['year']}"
-            # else:
-            #     changed_movie["caption"] = f"{movie['name']} / {movie['ori_name']} / {movie['year']}"
-
+            changed_movie = {
+                "id": movie["id"],
+                "poster": movie["poster"],
+                "caption": f"{movie['name']} / {movie['ori_name']} / {movie['year']}" if movie["name"] != movie[
+                    "ori_name"]
+                else f"{movie['name']} / {movie['year']}"
+            }
             result.append(changed_movie)
 
         # определяем предыдущие и последующие страницы для навигации
@@ -115,3 +116,55 @@ class DBase:
             pages["next"] = page + 1
 
         return result, pages
+
+    def get_comments(self, movie_id: int = None):
+            """
+            Возвращает список комментариев к фильму.
+
+            Args:
+                movie_id (int): id фильма (опционально).
+
+            Returns:
+                list: список комментариев.
+            """
+            sql = """SELECT first_name AS user_name, text, created_at FROM app_comments 
+            INNER JOIN auth_user ON user_id = auth_user.id """
+            if movie_id is not None:
+                sql += "WHERE movie_id = ? ORDER BY created_at DESC"
+
+            self.__cursor.execute(sql, (movie_id,) if movie_id else None)
+            comments = self.__cursor.fetchall()
+
+            result = [
+                {"user": comment["user_name"],
+                 "text": get_comment_for_html(comment["text"]),
+                 "created_at": sec_to_datetime(comment["created_at"])
+                 }
+                for comment in comments]
+            return result
+
+    def add_comment(self, user_id: int = None, movie_id: int = None, text: str = "", created_at: int = None):
+        """
+        Добавляет комментарий к фильму.
+
+        Args:
+            user_id (int): id пользователя.
+            movie_id (int): id фильма.
+            text (str): текст комментария.
+            created_at (int): время создания комментария (опционально, по умолчанию текущее время).
+        """
+        if created_at is None:
+            created_at = int(time.time())
+        if movie_id is None or text.strip() == "":
+            return
+
+        sql = """INSERT INTO app_comments (user_id, movie_id, text, created_at) VALUES (?, ?, ?, ?)"""
+        self.__cursor.execute(sql, (user_id, movie_id, text, created_at))
+        self.__conn.commit()
+
+
+if __name__ == "__main__":
+    db = DBase()
+    # res = db.get_comments(movie_id=2)
+    # print(res)
+    db.add_comment(user_id=1, movie_id=2, text='Это 2-й комментарий на фильм &quot;Черное солнце&quot')
