@@ -1,11 +1,12 @@
 """
-Модуль для работы с базой данных фильмов
+Модуль для работы с базой данных фильмов/сериалов через SQLite
 """
 
 import sqlite3
 import re
 import time
 from tools.time_tools import sec_to_datetime
+from tools.comment import get_comment_for_html
 
 
 def is_float(s: str) -> bool:
@@ -312,9 +313,11 @@ class DBase:
 
         self.__cursor.execute(sql, (movie_id,) if movie_id else None)
         comments = self.__cursor.fetchall()
-
-        result = [
-            {"user": comment["user"], "text": comment["text"], "created_at": sec_to_datetime(comment["created_at"])}
+        result = [{
+            "user": comment["user"],
+            "text": get_comment_for_html(comment["text"]),          # подготавливаем комментарий для вывода HTML
+            "created_at": sec_to_datetime(comment["created_at"])
+        }
             for comment in comments]
         return result
 
@@ -332,7 +335,32 @@ class DBase:
             created_at = int(time.time())
         if movie_id is None or text.strip() == "":
             return
-
         sql = """INSERT INTO comments (user_id, movie_id, text, created_at) VALUES (?, ?, ?, ?)"""
         self.__cursor.execute(sql, (user_id, movie_id, text, created_at))
         self.__conn.commit()
+
+    def is_exist(self, table_name: str, field_name: str, value) -> bool:
+        """
+            Проверяет, существует ли запись в таблице базы данных с указанным значением в заданном поле.
+
+            Метод выполняет SQL-запрос для поиска записи в таблице `table_name`,
+            где значение в поле `field_name` соответствует заданному `value`.
+            Возвращает `True`, если такая запись существует, и `False`, если запись не найдена.
+
+            Args:
+                table_name (str): Название таблицы, в которой выполняется поиск.
+                field_name (str): Название поля, в котором выполняется поиск значения.
+                value: Значение, которое проверяется на наличие в таблице.
+
+            Returns:
+                bool: `True`, если запись найдена, `False` в противном случае.
+       """
+        sql = f"SELECT 1 FROM {table_name} WHERE {field_name} = ? LIMIT 1"
+        self.__cursor.execute(sql, (value, ))
+        return bool(self.__cursor.fetchone())
+
+
+if __name__ == "__main__":
+    db = DBase()
+    res = db.is_exist(table_name="users", field_name="id", value=1)
+    print(res)

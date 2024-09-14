@@ -4,7 +4,6 @@
         <span id="comment_span_id" class="close">&times;</span>
         <h2>Новый комментарий:</h2>
         <form id="comment_form" action='/comment/add/' method='POST' autocomplete="off">
-            <input type="hidden" id="user_id" name="user_id" value=1>
             <input type="hidden" id="movie_id" name="movie_id" value={{ movie.id }}>
             <div class="form-group">
                 <textarea id="comment_text" name="text" rows="15" cols="66" placeholder="Введите ваш комментарий" style="font-size: 14px;"></textarea>

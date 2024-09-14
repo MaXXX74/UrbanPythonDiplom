@@ -1,6 +1,14 @@
+"""
+Основной модуль для запуска web-сервера на Flask.
+
+Команда запуска из корня проекта: python server.py
+"""
+
 from flask import Flask, render_template, request, session, redirect, url_for
 from database import DBase
-import re, html
+from forms.add_comment import AddCommentForm
+from tools.comment import get_comment_for_db
+from tools.user import get_current_user_id
 
 app = Flask(__name__)
 app.secret_key = 'hdggrtt465673728kgjj6'
@@ -9,33 +17,6 @@ menu = [
     {"label": "Каталог", "link": "/"},
     {"label": "Поиск", "link": "#", "id": "search_button"}
 ]
-
-
-# очищает текст комментария
-def clean_comment(comment: str) -> str:
-    """
-    Очищает и форматирует текст комментария.
-
-    Функция выполняет следующие действия для обработки текста комментария:
-    - Удаляет лишние пробелы в начале и конце строки.
-    - Убирает HTML-теги из текста.
-    - Экранирует специальные символы для защиты от XSS-атак.
-    - Заменяет последовательные переводы строки на тег <br>.
-    - Сокращает несколько пробелов до одного.
-
-    Args:
-        comment (str): Текст комментария.
-
-    Returns:
-        str: Очищенный и отформатированный текст.
-    """
-    cleaned_comment = comment.strip()
-    cleaned_comment = re.sub(r'<.*?>', '', cleaned_comment)
-    cleaned_comment = html.escape(cleaned_comment)
-    cleaned_comment = re.sub(r'(\r\n)+', '<br>', cleaned_comment)
-    cleaned_comment = re.sub('r\n+', '<br>', cleaned_comment)
-    cleaned_comment = re.sub(r'\s+', ' ', cleaned_comment)
-    return cleaned_comment
 
 
 # обработчик ошибки 404
@@ -190,13 +171,26 @@ def add_comment():
     Returns:
         Redirect: перенаправление на страницу фильма после добавления комментария.
     """
-    db = DBase()
-    user_id = request.form.get('user_id')
-    movie_id = request.form.get('movie_id')
-    text = clean_comment(request.form.get('text'))
-    if text and text != "<br>":
-        db.add_comment(user_id=user_id, movie_id=movie_id, text=text)
-    return redirect(url_for('movie_page', id=movie_id))
+    form = AddCommentForm(request.form)
+    if request.method == 'POST' and form.validate():
+
+        # если валидация прошла, можно получить данные и сохранить их
+        db = DBase()
+        user_id = get_current_user_id()
+        movie_id = form.movie_id.data
+        text = get_comment_for_db(form.text.data)
+
+        try:
+            if (db.is_exist("users", "id", user_id)
+                    and db.is_exist("movies", "id", movie_id)):
+                db.add_comment(user_id=user_id, movie_id=movie_id, text=text)
+        except Exception as e:
+            print(f"ERROR: ошибка добавления комментария. {e}")
+        finally:
+            return redirect(url_for('movie_page', id=movie_id))
+
+    # в случае ошибки - возвращаемся на главную страницу
+    return redirect(url_for('index_page'))
 
 
 if __name__ == "__main__":
