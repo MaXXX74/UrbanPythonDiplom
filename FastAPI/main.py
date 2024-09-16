@@ -5,18 +5,22 @@
 """
 from typing import Annotated
 
-from fastapi import FastAPI, Request, status, Depends, Form
+from fastapi import FastAPI, Request, status, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import insert
+from sqlalchemy import select, insert, exists
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import secrets
 from tools.database import DBase
+from tools.user import get_current_user_id
+from tools.comment import get_comment_for_db
 from backend.db_depends import get_db
 from models.comment import Comment
+from models.user import User
+from models.movie import Movie
 import time, re, html
 
 app = FastAPI()
@@ -249,19 +253,37 @@ async def movie_page(request: Request, id: int):
     return templates.TemplateResponse(template_file, context=context)
 
 
-
 # обработка добавления нового комментария
 @app.post("/comment/add/")
-async def add_comment(
+def add_comment(
         db: Annotated[Session, Depends(get_db)],
-        user_id: int = Form(...),
-        movie_id: int = Form(...),
-        text: str = Form()):
-    text = clean_comment(text)
-    if text and text != "<br>":
-        db.execute(insert(Comment).values(user_id=user_id,
-                                          movie_id=movie_id,
-                                          text=text,
-                                          created_at=int(time.time())))
-        db.commit()
-    return RedirectResponse(url=f"/movie/{movie_id}", status_code=status.HTTP_303_SEE_OTHER)
+        movie_id: int = Form(0),        # чтобы не было исключения
+        text: str = Form("")):          # если поля отсутствуют
+    """
+    Обработчик добавления комментария.
+
+    Принимает данные формы POST-запроса и добавляет новый комментарий к фильму.
+    После добавления перенаправляет пользователя на страницу фильма.
+
+    Returns:
+        Redirect: перенаправление на страницу фильма после добавления комментария
+        или на главную страницу каталога, если такой фильм отсутствует
+    """
+    # проверяем полученные данные
+    if movie_id <= 0:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    elif not text.strip():
+        return RedirectResponse(url=f"/movie/{movie_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+    # если все нормально - добавляем данные
+    user_id = get_current_user_id()         # получаем user_id текущего пользователя
+    text = get_comment_for_db(text)         # готовим комментарий для загрузки в БД
+    try:
+        if (db.scalar(select(exists().where(User.id == user_id)))               # если user_id есть в БД
+                and db.scalar(select(exists().where(Movie.id == movie_id)))):   # и movie_id тоже
+            db.execute(insert(Comment).values(user_id=user_id, movie_id=movie_id, text=text, created_at=int(time.time())))
+            db.commit()
+    except Exception as e:
+        print(f"ERROR: ошибка добавления комментария. {e}")
+    finally:
+        return RedirectResponse(url=f"/movie/{movie_id}", status_code=status.HTTP_303_SEE_OTHER)
