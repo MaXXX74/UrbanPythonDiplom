@@ -4,9 +4,6 @@
 
 import sqlite3
 import re
-import time
-from tools.comment import get_comment_for_html
-from tools.time_tools import sec_to_datetime
 
 
 def is_float(s: str) -> bool:
@@ -141,48 +138,48 @@ class DBase:
         Создает таблицы в базе данных, если они еще не существуют.
         """
         sql = '''CREATE TABLE users(
-            id INTEGER NOT NULL, 
-            login VARCHAR(50) NOT NULL, 
-            name VARCHAR(50) NOT NULL, 
-            password_hash VARCHAR(64) NOT NULL, 
+            id INTEGER NOT NULL,
+            login VARCHAR(50) NOT NULL,
+            name VARCHAR(50) NOT NULL,
+            password_hash VARCHAR(64) NOT NULL,
             PRIMARY KEY (id)
             );
-        
+
             CREATE TABLE movies (
-            id INTEGER NOT NULL, 
-            name TEXT NOT NULL, 
-            ori_name TEXT NOT NULL, 
-            year INTEGER NOT NULL, 
-            poster TEXT NOT NULL, 
-            genre TEXT NOT NULL, 
-            creators TEXT NOT NULL, 
-            director TEXT NOT NULL, 
-            actors TEXT NOT NULL, 
-            description TEXT NOT NULL, 
-            rating_imdb FLOAT, 
-            rating_kinopoisk FLOAT, 
+            id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            ori_name TEXT NOT NULL,
+            year INTEGER NOT NULL,
+            poster TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            creators TEXT NOT NULL,
+            director TEXT NOT NULL,
+            actors TEXT NOT NULL,
+            description TEXT NOT NULL,
+            rating_imdb FLOAT,
+            rating_kinopoisk FLOAT,
             PRIMARY KEY (id)
             );
 
         CREATE TABLE shots (
-            id INTEGER NOT NULL, 
-            file TEXT NOT NULL, 
-            movie_id INTEGER NOT NULL, 
-            url TEXT NOT NULL, 
-            PRIMARY KEY (id), 
+            id INTEGER NOT NULL,
+            file TEXT NOT NULL,
+            movie_id INTEGER NOT NULL,
+            url TEXT NOT NULL,
+            PRIMARY KEY (id),
             FOREIGN KEY(movie_id) REFERENCES movies (id)
-            );        
+            );
 
         CREATE TABLE comments (
-            id INTEGER NOT NULL, 
-            user_id INTEGER, 
-            movie_id INTEGER NOT NULL, 
-            text TEXT NOT NULL, 
-            created_at INTEGER NOT NULL, 
-            PRIMARY KEY (id), 
-            FOREIGN KEY(movie_id) REFERENCES movies (id), 
+            id INTEGER NOT NULL,
+            user_id INTEGER,
+            movie_id INTEGER NOT NULL,
+            text TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            PRIMARY KEY (id),
+            FOREIGN KEY(movie_id) REFERENCES movies (id),
             FOREIGN KEY(user_id) REFERENCES users (id)
-            ); 
+            );
         '''
         self.__cursor.executescript(sql)
 
@@ -194,7 +191,7 @@ class DBase:
             movie (dict): словарь с данными о фильме.
         """
         if movie:
-            sql = """INSERT INTO movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk) 
+            sql = """INSERT INTO movies (name, ori_name, year, poster, genre, creators, director, actors, description, rating_imdb, rating_kinopoisk)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
             self.__cursor.execute(sql, (
                 movie["name"],

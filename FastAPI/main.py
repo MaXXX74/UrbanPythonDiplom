@@ -2,6 +2,10 @@
 Основной модуль для запуска web-сервера на FastAPI.
 
 Команда запуска из корня проекта: python -m uvicorn main:app
+
+Для запуска без допуска к документации swagger и пр. замените `app = FastAPI()` на
+`app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)`
+
 """
 from typing import Annotated
 
@@ -9,21 +13,32 @@ from fastapi import FastAPI, Request, status, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import select, insert, exists
+from sqlalchemy import select, insert, exists, desc
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import secrets
 from tools.database import DBase
 from tools.user import get_current_user_id
-from tools.comment import get_comment_for_db
+from tools.comment import get_comment_for_db, get_comment_for_html
+from tools.time_tools import sec_to_datetime
 from backend.db_depends import get_db
 from models.comment import Comment
 from models.user import User
 from models.movie import Movie
-import time, re, html
+from models.shot import Shot
+from routers.movie import movie
+from routers.shot import shot
+from routers.comment import comment
+import time
 
 app = FastAPI()
+# app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+
+# подключаем роутеры для API
+app.include_router(movie)
+app.include_router(shot)
+app.include_router(comment)
 
 # пути для шаблонов и статическим файлам
 templates = Jinja2Templates(directory="templates")              # путь к директории с шаблонами
@@ -38,45 +53,6 @@ menu = [
     {"label": "Каталог", "link": "/"},
     {"label": "Поиск", "link": "#", "id": "search_button"}
 ]
-
-import re
-import html
-
-
-def clean_comment(comment: str) -> str:
-    """
-    Очищает и форматирует текст комментария.
-
-    Эта функция выполняет несколько действий для обработки текста комментария:
-    1. Удаляет пробелы в начале и конце строки.
-    2. Удаляет любые HTML-теги из текста.
-    3. Экранирует специальные символы для предотвращения XSS-атак.
-    4. Заменяет последовательности переводов строки на HTML-тег <br>.
-    5. Убирает лишние пробелы, заменяя их на одиночные пробелы.
-
-    Args:
-        comment (str): Исходный текст комментария.
-
-    Returns:
-        str: Очищенный и форматированный текст комментария.
-    """
-    # убираем лишние пробелы в начале и конце строки
-    cleaned_comment = comment.strip()
-
-    # убираем все HTML-теги
-    cleaned_comment = re.sub(r'<.*?>', '', cleaned_comment)
-
-    # экранируем специальные символы для предотвращения XSS-атак
-    cleaned_comment = html.escape(cleaned_comment)
-
-    # заменяем один или несколько переводов строки на один <br>
-    cleaned_comment = re.sub(r'(\r\n)+', '<br>', cleaned_comment)
-    cleaned_comment = re.sub('r\n+', '<br>', cleaned_comment)
-
-    # заменяем один или несколько пробелов на один
-    cleaned_comment = re.sub(r'\s+', ' ', cleaned_comment)
-
-    return cleaned_comment
 
 
 # обработчик для ошибки 404
@@ -112,7 +88,6 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
             "request": request,
             "title": "Нет данных",
             "menu": menu,
-            "pages": (None, None),
         }
         # возвращаем HTML-ответ с использованием шаблона "nodata.html"
         return templates.TemplateResponse("nodata.html", context=context, status_code=404)
@@ -157,8 +132,6 @@ async def index_page(request: Request, page: int = 1):
             "request": request,
             "title": "Нет данных",
             "menu": menu,
-            "pages": pages,
-            "link": "/page/",
         }
     return templates.TemplateResponse(template_file, context=context)
 
@@ -206,15 +179,13 @@ async def search_page(request: Request, page: int = 1):
             "request": request,
             "title": "Нет данных",
             "menu": menu,
-            "pages": pages,
-            "link": "/search/page/",
         }
     return templates.TemplateResponse(template_file, context=context)
 
 
 # страница с информацией о фильме
 @app.get("/movie/{id}", response_class=HTMLResponse)
-async def movie_page(request: Request, id: int):
+async def movie_page(request: Request, db: Annotated[Session, Depends(get_db)], id: int):
     """
     Возвращает страницу с подробной информацией о фильме
 
@@ -226,13 +197,24 @@ async def movie_page(request: Request, id: int):
         HTMLResponse: сгенерированная HTML-страница, с информацией о фильме или
         переход на страницу с сообщением, что данные отсутствуют.
     """
-    db = DBase()
-    movie = db.get_movie_by_id(id)
-    shots = db.get_shots_by_id(id)
-    comments = db.get_comments(movie_id=id)
-
-    # если список фильмов не пуст
+    movie = db.scalar(select(Movie).where(Movie.id == id))
     if movie:
+        shots = db.scalars(select(Shot).where(Shot.movie_id == id)).all()
+        comments = (db.query(User.name, Comment.text, Comment.created_at)
+                    .join(User)
+                    .filter(Comment.movie_id == id)
+                    .order_by(desc(Comment.created_at)
+        ).all())
+
+        # подготавливаем данные для загрузки в шаблон
+        comments = [{
+            "user": comment[0],
+            "text": get_comment_for_html(comment[1]),  # подготавливаем комментарий для вывода HTML
+            "created_at": sec_to_datetime(comment[2])
+        }
+            for comment in comments]
+
+        # готовим контекст для шаблона
         template_file = "movie.html"
         context = {
             "request": request,
@@ -242,20 +224,19 @@ async def movie_page(request: Request, id: int):
             "comments": comments,
         }
     else:
-        # если данные отсутствуют
+        # если данные отсутствуют (фильм не найден)
         template_file = "nodata.html"
         context = {
             "request": request,
             "title": "Нет данных",
             "menu": menu,
-            "pages": (None, None),
         }
     return templates.TemplateResponse(template_file, context=context)
 
 
 # обработка добавления нового комментария
 @app.post("/comment/add/")
-def add_comment(
+async def add_comment(
         db: Annotated[Session, Depends(get_db)],
         movie_id: int = Form(0),        # чтобы не было исключения
         text: str = Form("")):          # если поля отсутствуют

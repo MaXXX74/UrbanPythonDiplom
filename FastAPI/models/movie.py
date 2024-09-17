@@ -48,7 +48,10 @@ class Movie(Base):
     rating_kinopoisk = Column(Float, nullable=True)
 
     # связь с моделью Shot: один фильм - много скриншотов
-    shots = relationship("Shot", back_populates="movie", cascade="all, delete-orphan")
+    shots = relationship("Shot", back_populates="movie", cascade="all")
+
+    # связь с моделью Comment: один фильм - много комментариев
+    comments = relationship("Comment", back_populates="movie", cascade="all")
 
 
 if __name__ == "__main__":

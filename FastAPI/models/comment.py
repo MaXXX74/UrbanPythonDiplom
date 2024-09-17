@@ -35,10 +35,10 @@ class Comment(Base):
     created_at = Column(Integer, nullable=False)
 
     # связь с моделью User: много комментариев - один пользователь
-    user = relationship("User", back_populates="comments", cascade="all, delete-orphan")
+    user = relationship("User", back_populates="comments", single_parent=True)
 
     # связь с моделью Movie: много комментариев - один фильм
-    movie = relationship("Movie", back_populates="comments", cascade="all, delete-orphan")
+    movie = relationship("Movie", back_populates="comments", single_parent=True)
 
 
 if __name__ == "__main__":

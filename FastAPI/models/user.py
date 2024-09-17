@@ -31,7 +31,7 @@ class User(Base):
     password_hash = Column(String(length=64), nullable=False)
 
     # связь с моделью Comment: один пользователь - много комментариев
-    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="user", cascade="all")
 
 
 if __name__ == "__main__":
