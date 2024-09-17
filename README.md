@@ -65,7 +65,7 @@
 <p align="center" style="margin-top: -15px;">Комментарий после добавления</p>
 
 ![Документация Swagger (версия для FastAPI)](FastAPI/docs/pic4.1_1.png)
-<p align="center" style="margin-top: -15px;">Документация Swagger(версия для FastAPI</p>
+<p align="center" style="margin-top: -15px;">Документация Swagger (версия для FastAPI)</p>
 
 ![Добавление нового фильма (версия для Django)](Django/docs/pic4.1.4_3.png)
 <p align="center" style="margin-top: -15px;">Добавление нового фильма (версия для Django)</p>
